@@ -54,7 +54,7 @@ exports.login = catchAsync(async (req, res, next) => {
   });
 });
 
-exports.protect = catchAsync((req, res, res) => {
+exports.protect = catchAsync((req, res, next) => {
   //Getting token and check of it's there
   let token;
   if (
@@ -71,6 +71,8 @@ exports.protect = catchAsync((req, res, res) => {
   }
 
   //2) Verification token
+
+  jwt.verify()
 
   console.log('token', token);
 });
