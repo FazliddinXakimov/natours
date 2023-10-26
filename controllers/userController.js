@@ -1,8 +1,9 @@
 const User = require('../models/userModel');
 const catchAsync = require('../utils/catchAsync');
 
-exports.getAllUsers = catchAsync((req, res) => {
-  const users = User.find();
+exports.getAllUsers = catchAsync(async (req, res) => {
+  const users = await User.find();
+  console.log('users', users);
 
   res.status(200).json({
     status: 'success',

@@ -1,3 +1,4 @@
+const { promisify } = require('util');
 const jwt = require('jsonwebtoken');
 const User = require('./../models/userModel');
 const catchAsync = require('../utils/catchAsync');
@@ -17,7 +18,7 @@ exports.signup = catchAsync(async (req, res, next) => {
     passwordConfirm: req.body.passwordConfirm,
   });
 
-  const token = signToken(id);
+  const token = signToken(newUser.id);
 
   res.status(201).json({
     status: 'success',
@@ -37,8 +38,9 @@ exports.login = catchAsync(async (req, res, next) => {
   }
 
   //check if user exists && password is correct
-  const user = User.findOne({ email }).select('+password');
+  const user = await User.findOne({ email }).select('+password');
 
+  user.correctPassword();
   if (!user || !(await user.correctPassword(password, user.password))) {
     return next(new AppError('Incorrect email or password', 401));
   }
@@ -47,14 +49,14 @@ exports.login = catchAsync(async (req, res, next) => {
 
   //if everything is ok , send token to client
 
-  const token = signToken(id);
+  const token = signToken(user.id);
   res.status(200).json({
     status: 'success',
     token,
   });
 });
 
-exports.protect = catchAsync((req, res, next) => {
+exports.protect = catchAsync(async (req, res, next) => {
   //Getting token and check of it's there
   let token;
   if (
@@ -62,6 +64,7 @@ exports.protect = catchAsync((req, res, next) => {
     req.headers.authorization.startsWith('Bearer')
   ) {
     token = req.headers.authorization.split(' ')[1];
+    console.log('token', token);
   }
 
   if (!token) {
@@ -69,10 +72,22 @@ exports.protect = catchAsync((req, res, next) => {
       new AppError('You are not logged in! Please log in to get access', 401)
     );
   }
-
   //2) Verification token
-
-  jwt.verify()
-
+  const decoded = await promisify(jwt.verify)(token, process.env.JWT_SECRET);
+  console.log(decoded);
   console.log('token', token);
+
+  // 3) Check if user still exists
+
+  const freshUser = await User.findById(decoded.id);
+  if (!freshUser) {
+    return next(
+      new AppError(
+        'The user belonging to this token does do longer exist.',
+        401
+      )
+    );
+  }
+
+  next();
 });
