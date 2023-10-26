@@ -1,5 +1,5 @@
-const { promisify } = require('util');
 const jwt = require('jsonwebtoken');
+const { promisify } = require('util');
 const User = require('./../models/userModel');
 const catchAsync = require('../utils/catchAsync');
 const AppError = require('../utils/appError');
@@ -40,7 +40,7 @@ exports.login = catchAsync(async (req, res, next) => {
   //check if user exists && password is correct
   const user = await User.findOne({ email }).select('+password');
 
-  user.correctPassword();
+  // user.correctPassword();
   if (!user || !(await user.correctPassword(password, user.password))) {
     return next(new AppError('Incorrect email or password', 401));
   }
@@ -64,7 +64,6 @@ exports.protect = catchAsync(async (req, res, next) => {
     req.headers.authorization.startsWith('Bearer')
   ) {
     token = req.headers.authorization.split(' ')[1];
-    console.log('token', token);
   }
 
   if (!token) {
@@ -72,6 +71,7 @@ exports.protect = catchAsync(async (req, res, next) => {
       new AppError('You are not logged in! Please log in to get access', 401)
     );
   }
+
   //2) Verification token
   const decoded = await promisify(jwt.verify)(token, process.env.JWT_SECRET);
   console.log(decoded);
@@ -79,15 +79,15 @@ exports.protect = catchAsync(async (req, res, next) => {
 
   // 3) Check if user still exists
 
-  const freshUser = await User.findById(decoded.id);
-  if (!freshUser) {
-    return next(
-      new AppError(
-        'The user belonging to this token does do longer exist.',
-        401
-      )
-    );
-  }
+  // const freshUser = await User.findById(decoded.id);
+  // if (!freshUser) {
+  //   return next(
+  //     new AppError(
+  //       'The user belonging to this token does do longer exist.',
+  //       401
+  //     )
+  //   );
+  // }
 
   next();
 });
