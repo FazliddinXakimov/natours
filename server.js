@@ -1,4 +1,3 @@
-const crypto = require('crypto');
 const mongoose = require('mongoose');
 const dotenv = require('dotenv');
 
@@ -25,7 +24,6 @@ mongoose
     useUnifiedTopology: true,
   })
   .then((con) => {
-    // console.log('connection', con.connections);
     console.log('DB connection successful!');
   });
 
@@ -33,7 +31,7 @@ const app = require('./app');
 
 const port = process.env.PORT || 3000;
 const server = app.listen(port, () => {
-  // console.log(`App running on port ${port}`);
+  console.log(`App running on port ${port}`);
 });
 
 process.on('unhandledRejection', (err) => {
