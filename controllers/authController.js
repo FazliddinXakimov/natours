@@ -86,6 +86,8 @@ exports.protect = catchAsync(async (req, res, next) => {
     );
   }
 
+  // authentication finis
+
   //2) Verification token
   const decoded = await promisify(jwt.verify)(token, process.env.JWT_SECRET);
   // 3) Check if user still exists
